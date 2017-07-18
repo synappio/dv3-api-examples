@@ -1,4 +1,4 @@
-# DV3 RES API example in PHP
+# DV3 REST API example in PHP
 
 Validate an email address using the realtime API:
 
