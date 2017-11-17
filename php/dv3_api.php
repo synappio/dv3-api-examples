@@ -9,11 +9,15 @@
     return $ch;
   }
 
-  function _get_dv3_api_parsed_result($ch) {
-    $output = curl_exec($ch);
+  function _close_dv3_api_curl_handle($ch) {
     $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
     assert($status_code == 200);
+  }
+
+  function _get_dv3_api_parsed_result($ch) {
+    $output = curl_exec($ch);
+    _close_dv3_api_curl_handle($ch);
     return json_decode($output);
   }
 
@@ -53,4 +57,17 @@
   function get_list_info($list_id) {
     $ch = _get_dv3_api_curl_handle(API_ROOT . '/user/me/list/' . urlencode($list_id) . '/');
     return _get_dv3_api_parsed_result($ch);
+  }
+
+  function download_result($list_id, $safe_emails_only) {
+    $ch = _get_dv3_api_curl_handle(
+      API_ROOT . '/user/me/list/' . urlencode($list_id) . '/download_result/?safe='
+      . ($safe_emails_only ? 'Y' : 'N'));
+    $tmpfname = tempnam(sys_get_temp_dir(), 'dvresult');
+    $f = fopen($tmpfname, 'wb');
+    curl_setopt($ch, CURLOPT_FILE, $f);
+    curl_exec($ch);
+    fclose($f);
+    _close_dv3_api_curl_handle($ch);
+    return $tmpfname;
   }
